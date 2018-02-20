@@ -16,13 +16,16 @@ BUCKET - Google Storage bucket for store backups
 PGDATABASE - database for backup
 DUMP - filename of dump in bucket
 DROP - Drop schema 'public' and everything in it in database. Set exactly to "yes" for use it. 
+
+Optional:
+CREDENTIALS - path to credentials json file.
 '''
 }
 
 # Show help if need
 if [[ $1 = "help" ]] || [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then
 	echo '''
-For run script, you need to mount json key file with credentials for your service account to /credentials.json'''
+For run script, you need to mount json key file with credentials for your service account to /credentials/credentials.json'''
 	show_help
 	exit 0
 fi
@@ -33,10 +36,14 @@ if [ -z ${PGPASSWORD+x} ] || [ -z ${PGUSER+x} ] || [ -z ${PGHOST+x} ] || [ -z ${
         exit 1
 fi
 
+if [ -z ${CREDENTIALS+x} ]; then
+        CREDENTIALS="/credentials/credentials.json"
+fi
+
 # Basic validation of credentials
-if [ -d /credentials.json ]; then
-	echo "Credentials not mount. Run with --help to read how to use."
-	exit 1
+if [ ! -f "$CREDENTIALS" ]; then
+        echo "Credentials not mount. Run with --help to read how to use."
+        exit 1
 fi
 
 # Set port
@@ -45,7 +52,7 @@ if [ -z ${PGPORT+x} ]; then
 fi
 
 # Login to GCE
-if ! gcloud auth activate-service-account --key-file /credentials.json; then
+if ! gcloud auth activate-service-account --key-file $CREDENTIALS; then
 	exit 1
 fi
 

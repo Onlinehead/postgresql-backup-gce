@@ -18,6 +18,7 @@ Optional:
 UPDATE_LATEST - if set then script will also update file 'latest.dump' to current backup.
 PGPORT - PostgreSQL port
 PREFIX - Custom prefix in dump name
+CREDENTIALS - Path to credentials files
 
 Example of backup filename - $PREFIX-my_database_1-20180220191154.dump.gz'''
 }
@@ -25,7 +26,7 @@ Example of backup filename - $PREFIX-my_database_1-20180220191154.dump.gz'''
 # Show help if need
 if [[ $1 = "help" ]] || [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then
         echo '''
-For run script, you need to mount json key file with credentials for your service account to /credentials.json'''
+For run script, you need to mount json key file with credentials for your service account to /credentials/credentials.json by default'''
         show_help
         exit 0
 fi
@@ -35,14 +36,19 @@ if [ -z ${PGPASSWORD+x} ] || [ -z ${PGUSER+x} ] || [ -z ${PGHOST+x} ] || [ -z ${
 	exit 1
 fi
 
+if [ -z ${CREDENTIALS+x} ]; then
+	CREDENTIALS="/credentials/credentials.json"
+fi
+
 # Basic validation of credentials
-if [ -d /credentials.json ]; then
+if [ ! -f "$CREDENTIALS" ]; then
         echo "Credentials not mount. Run with --help to read how to use."
         exit 1
 fi
 
+
 # Login to GCE
-if ! gcloud auth activate-service-account --key-file /credentials.json; then
+if ! gcloud auth activate-service-account --key-file $CREDENTIALS; then
 	exit 1
 fi
 
