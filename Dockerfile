@@ -11,6 +11,6 @@ ADD dump.sh /usr/bin/dump
 ADD restore.sh /usr/bin/restore
 RUN chmod +x /usr/bin/dump; chmod +x /usr/bin/restore
 
-VOLUME ["/credentials.json"]
+VOLUME ["/credentials/credentials.json"]
 
 
